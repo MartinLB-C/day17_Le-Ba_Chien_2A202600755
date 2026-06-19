@@ -137,7 +137,7 @@ class AdvancedAgent:
     def _offline_response(self, user_id: str, thread_id: str, message: str) -> str:
         profile = self.profile_store.read_text(user_id).lower()
         msg = message.lower()
-        if "tên gì" in msg or "tên là gì" in msg:
+        if "tên gì" in msg or "tên là gì" in msg or "tên tôi là gì" in msg:
             match = re.search(r'- name:\s+(.*)', profile, re.IGNORECASE)
             if match:
                 return f"Bạn tên là {match.group(1)}."
