@@ -44,11 +44,7 @@ class AdvancedAgent:
         if thread_id not in self.thread_prompt_tokens:
             self.thread_prompt_tokens[thread_id] = 0
             
-        updates = extract_profile_updates(message)
-        if updates:
-            current_profile = self.profile_store.read_text(user_id)
-            new_facts = "\n" + "\n".join([f"- {k}: {v}" for k, v in updates.items()])
-            self.profile_store.write_text(user_id, current_profile + new_facts)
+        self._update_profile(user_id, message)
             
         prompt_tokens = self._estimate_prompt_context_tokens(user_id, thread_id)
         prompt_tokens += estimate_tokens(message)
@@ -102,11 +98,7 @@ class AdvancedAgent:
             self.thread_tokens[thread_id] = 0
             self.thread_prompt_tokens[thread_id] = 0
             
-        updates = extract_profile_updates(message)
-        if updates:
-            current_profile = self.profile_store.read_text(user_id)
-            new_facts = "\n" + "\n".join([f"- {k}: {v}" for k, v in updates.items()])
-            self.profile_store.write_text(user_id, current_profile + new_facts)
+        self._update_profile(user_id, message)
             
         prompt_tokens = self._estimate_prompt_context_tokens(user_id, thread_id)
         prompt_tokens += estimate_tokens(message)
@@ -159,3 +151,32 @@ class AdvancedAgent:
             self.langchain_agent = build_chat_model(self.config.model)
         except Exception:
             self.langchain_agent = None
+
+    def _update_profile(self, user_id: str, updates: dict[str, str]) -> None:
+        updates = extract_profile_updates(updates) if isinstance(updates, str) else updates
+        if not updates:
+            return
+            
+        content = self.profile_store.read_text(user_id)
+        lines = content.split("\n")
+        
+        # Parse existing facts
+        facts_dict = {}
+        header_lines = []
+        for line in lines:
+            match = re.match(r'- ([a-zA-Z]+):\s+(.*)', line)
+            if match:
+                facts_dict[match.group(1)] = match.group(2)
+            elif not line.startswith('- ') and line.strip() != "":
+                header_lines.append(line)
+                
+        # Merge updates (overwrite existing keys)
+        for k, v in updates.items():
+            facts_dict[k] = v
+            
+        # Write back
+        new_content = "\n".join(header_lines) + "\n\n"
+        for k, v in facts_dict.items():
+            new_content += f"- {k}: {v}\n"
+            
+        self.profile_store.write_text(user_id, new_content.strip())

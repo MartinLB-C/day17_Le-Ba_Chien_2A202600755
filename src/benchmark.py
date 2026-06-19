@@ -160,8 +160,8 @@ def main() -> None:
     
     # Standard
     std_convs = load_conversations(std_data_path)
-    base_std = run_agent_benchmark("Baseline", BaselineAgent(config, force_offline=False), std_convs, config)
-    adv_std = run_agent_benchmark("Advanced", AdvancedAgent(config, force_offline=False), std_convs, config)
+    base_std = run_agent_benchmark("Baseline", BaselineAgent(config, force_offline=True), std_convs, config)
+    adv_std = run_agent_benchmark("Advanced", AdvancedAgent(config, force_offline=True), std_convs, config)
     
     print("### Standard Benchmark")
     print(format_rows([base_std, adv_std]))
@@ -169,8 +169,8 @@ def main() -> None:
     
     # Long Context
     long_convs = load_conversations(long_data_path)
-    base_long = run_agent_benchmark("Baseline", BaselineAgent(config, force_offline=False), long_convs, config)
-    adv_long = run_agent_benchmark("Advanced", AdvancedAgent(config, force_offline=False), long_convs, config)
+    base_long = run_agent_benchmark("Baseline", BaselineAgent(config, force_offline=True), long_convs, config)
+    adv_long = run_agent_benchmark("Advanced", AdvancedAgent(config, force_offline=True), long_convs, config)
     
     print("### Long Context Stress Benchmark")
     print(format_rows([base_long, adv_long]))
